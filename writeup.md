@@ -37,16 +37,16 @@ My model is the same as described in the lessons:
 ![alt text][image1]
 
 The state is made of:
-*x
-*y
-*psi
-*v
-*cte (Cross Track Error)
-*epsi (Psi error)
+* x
+* y
+* psi
+* v
+* cte (Cross Track Error)
+* epsi (Psi error)
 
 The actuators are:
-*a (throttle)
-*delta (steering angle)
+* a (throttle)
+* delta (steering angle)
 
 For the update equations see the image.
 
