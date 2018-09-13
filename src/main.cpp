@@ -94,7 +94,7 @@ int main() {
           double sa = j[1]["steering_angle"];
           double a = j[1]["throttle"];
 
-          //sa = sa * 0.43633;
+          sa = sa * -1;
 
           /*
           * TODO: Calculate steering angle and throttle using MPC.
@@ -112,8 +112,8 @@ int main() {
 
           //State 100milliseconds predicted
           double dt = 0.1;
-          double x1 = dt * v * cos(0.0);
-          double y1 = dt * v * sin(0.0);
+          double x1 = dt * v;
+          double y1 = 0.0;
 
           double epsi = -atan(coeffs[1]);
 
