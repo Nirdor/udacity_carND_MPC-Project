@@ -92,6 +92,9 @@ int main() {
           double psi = j[1]["psi"];
           double v = j[1]["speed"];
           double sa = j[1]["steering_angle"];
+          double a = j[1]["throttle"];
+
+          //sa = sa * 0.43633;
 
           /*
           * TODO: Calculate steering angle and throttle using MPC.
@@ -107,19 +110,26 @@ int main() {
           }
           Eigen::VectorXd coeffs = polyfit(eptsx, eptsy, 3);
 
-          // The cross track error is calculated by evaluating at polynomial at x, f(x)
-          // and subtracting y.
-          double x = 0.1 * v * cos(sa * 0.43633);
-          double y = 0.1 * v * sin(sa * 0.43633);
+          //State 100milliseconds predicted
+          double dt = 0.1;
+          double x1 = dt * v * cos(0.0);
+          double y1 = dt * v * sin(0.0);
 
-          double cte = polyeval(coeffs, x);
-          // Due to the sign starting at 0, the orientation error is -f'(x).
-          // derivative of f(x) -> coeffs[1] + 2 * x * coeffs[2] + 3 * x² * coeffs[3]
           double epsi = -atan(coeffs[1]);
 
+          // The cross track error is calculated by evaluating at polynomial at x, f(x)
+          // and subtracting y.
+          double cte1 = polyeval(coeffs, 0.0) + v * sin(epsi) * dt;
+          // Due to the sign starting at 0, the orientation error is -f'(x).
+          // derivative of f(x) -> coeffs[1] + 2 * x * coeffs[2] + 3 * x² * coeffs[3]
+
+          double psi1 = v * sa / 2.67 * dt;
+          double epsi1 = epsi + v * sa / 2.67 * dt;
+
+          double v1 = v + a * dt;
 
           Eigen::VectorXd state(6);
-          state << x, y, 0.0, v, cte, epsi;
+          state << x1, y1, psi1, v1, cte1, epsi1;
 
           vector<double> vars = mpc.Solve(state, coeffs);
 

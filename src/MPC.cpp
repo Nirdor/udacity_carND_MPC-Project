@@ -6,8 +6,8 @@
 using CppAD::AD;
 
 // TODO: Set the timestep length and duration
-size_t N = 8; //10
-double dt = 0.125; //0.08
+size_t N = 8; //8
+double dt = 0.100; //0.1
 
 // This value assumes the model presented in the classroom is used.
 //
@@ -22,7 +22,7 @@ double dt = 0.125; //0.08
 const double Lf = 2.67;
 
 //velocity
-double ref_v = 30;
+double ref_v = 40;
 
 // The solver takes all the state variables and actuator
 // variables in a singular vector. Thus, we should to establish
@@ -62,13 +62,13 @@ class FG_eval {
 
     // Minimize the use of actuators.
     for (size_t t = 0; t < N - 1; ++t) {
-      fg[0] += 2 * CppAD::pow(vars[delta_start + t], 2);
+      fg[0] += 3 * CppAD::pow(vars[delta_start + t], 2);
       fg[0] += CppAD::pow(vars[a_start + t], 2);
     }
 
     // Minimize the value gap between sequential actuations.
     for (size_t t = 0; t < N - 2; ++t) {
-      fg[0] += CppAD::pow(vars[delta_start + t + 1] - vars[delta_start + t], 2);
+      //fg[0] += CppAD::pow(vars[delta_start + t + 1] - vars[delta_start + t], 2);
       fg[0] += CppAD::pow(vars[a_start + t + 1] - vars[a_start + t], 2);
     }
 
@@ -111,8 +111,8 @@ class FG_eval {
       AD<double> delta0 = vars[delta_start + t - 1];
       AD<double> a0 = vars[a_start + t - 1];
 
-      AD<double> f0 = coeffs[0] + coeffs[1] * x0;
-      AD<double> psides0 = CppAD::atan(coeffs[1]);
+      AD<double> f0 = coeffs[0] + coeffs[1] * x0 + coeffs[2] * x0 * x0 + coeffs[3] * x0 * x0 * x0;
+      AD<double> psides0 = CppAD::atan(coeffs[1] + 2 * coeffs[2] * x0 + 3 * coeffs[3] * x0 * x0);
 
       // Recall the equations for the model:
       // x_[t+1] = x[t] + v[t] * cos(psi[t]) * dt
@@ -186,11 +186,11 @@ vector<double> MPC::Solve(Eigen::VectorXd state, Eigen::VectorXd coeffs) {
     vars_upperbound[i] = 1.0e19;
   }
 
-  // The upper and lower limits of delta are set to -1 and 1
+  // The upper and lower limits of delta are set to -80% and 80%
   // NOTE: Feel free to change this to something else.
   for (size_t i = delta_start; i < a_start; ++i) {
-    vars_lowerbound[i] = -0.95;
-    vars_upperbound[i] = 0.95;
+    vars_lowerbound[i] = -0.8;
+    vars_upperbound[i] = 0.8;
   }
 
   // Acceleration/decceleration upper and lower limits.
@@ -270,7 +270,7 @@ vector<double> MPC::Solve(Eigen::VectorXd state, Eigen::VectorXd coeffs) {
   ret.at(1) = solution.x[a_start];
   for (size_t i = 0; i < N; ++i) {
     ret.at(2 + i) = solution.x[x_start + i];
-    ret.at(N + 2 + i) = -1 * solution.x[y_start + i];
+    ret.at(N + 2 + i) = solution.x[y_start + i];
   }
 
   return ret;
